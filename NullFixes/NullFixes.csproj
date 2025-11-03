@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>NullFixes</AssemblyName>
+    <Product>NullFixes</Product>
+    <Version>1.0.0</Version>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json;
+      https://nuget.samboy.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
+    <RootNamespace>NullFixes</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+  
+  	<Import Project="..\GamePath.props" />
+
+	<ItemGroup Condition=" '$(GamePath)' != '' and Exists('$(GamePath)\Graveyard Keeper_Data\Managed\Assembly-CSharp.dll') ">
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(GamePath)\Graveyard Keeper_Data\Managed\Assembly-CSharp.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Assembly-CSharp-firstpass">
+			<HintPath>$(GamePath)\Graveyard Keeper_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+
+		<Reference Include="UnityEngine">
+			<HintPath>$(GamePath)\Graveyard Keeper_Data\Managed\UnityEngine.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(GamePath)\Graveyard Keeper_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+
+		<Reference Include="UnityEngine.Physics2DModule">
+			<HintPath>$(GamePath)\Graveyard Keeper_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+
+		<Reference Include="UnityEngine.InputLegacyModule">
+			<HintPath>$(GamePath)\Graveyard Keeper_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+
+		<Reference Include="UnityEngine.TextRenderingModule">
+			<HintPath>$(GamePath)\Graveyard Keeper_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<GamePluginDir Condition="'$(GamePluginDir)' == ''">
+			$(GamePath)\BepInEx\plugins\
+		</GamePluginDir>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(GamePath)' != ''">
+		<StartAction>Program</StartAction>
+		<StartProgram>$(GamePath)\Graveyard Keeper.exe</StartProgram>
+		<StartWorkingDirectory>$(GamePath)</StartWorkingDirectory>
+	</PropertyGroup>
+
+	<Target Name="CopyToGame" AfterTargets="Build" Condition="'$(GamePath)' != ''">
+		<ItemGroup>
+			<BuiltDll Include="$(TargetPath)" Condition="'$(TargetExt)' == '.dll'" />
+		</ItemGroup>
+
+		<MakeDir Directories="$(GamePluginDir)" Condition="!Exists('$(GamePluginDir)')" />
+		<Copy SourceFiles="@(BuiltDll)" DestinationFolder="$(GamePluginDir)" SkipUnchangedFiles="true" />
+	</Target>
+</Project>
